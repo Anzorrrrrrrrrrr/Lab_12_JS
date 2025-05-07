@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Тригонометричні обчислення</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 600px; margin: auto; }
+        label { display: inline-block; width: 150px; }
+        input { margin-bottom: 10px; }
+        button { padding: 10px 20px; }
+    </style>
+    <script>
+        function isNumb(fld) {
+            let t = fld.value;
+            for (let i = 0; i < t.length; i++) {
+                let ch = t.charAt(i);
+                if ((ch < "0" || ch > "9") && !(ch == "," || ch == "." || ch == "-")) {
+                    alert("Введіть лише цифри, крапку або кому!");
+                    fld.focus();
+                    fld.select();
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function validateForm() {
+            let start = document.forms["trigForm"]["start"].value;
+            let end = document.forms["trigForm"]["end"].value;
+            let step = document.forms["trigForm"]["step"].value;
+            let func = document.forms["trigForm"]["func"].value;
+
+            if (!isNumb(document.forms["trigForm"]["start"]) || 
+                !isNumb(document.forms["trigForm"]["end"]) || 
+                !isNumb(document.forms["trigForm"]["step"])) {
+                return false;
+            }
+
+            start = parseFloat(start.replace(",", "."));
+            end = parseFloat(end.replace(",", "."));
+            step = parseFloat(step.replace(",", "."));
+
+            if (isNaN(start) || isNaN(end) || isNaN(step)) {
+                alert("Введіть коректні числові значення!");
+                return false;
+            }
+
+            if (step <= 0) {
+                alert("Крок повинен бути більшим за 0!");
+                return false;
+            }
+
+            if (start >= end) {
+                alert("Початкове значення має бути меншим за кінцеве!");
+                return false;
+            }
+
+            generateTable(start, end, step, func);
+            return false;
+        }
+
+        function generateTable(start, end, step, func) {
+            
+            const validFuncs = ["sin", "cos", "tg"];
+            if (!validFuncs.includes(func)) {
+                alert("Некоректна функція!");
+                return;
+            }
+
+         
+            let newWindow = window.open("", "TableWindow", "width=800,height=600");
+            if (!newWindow) {
+                alert("Не вдалося відкрити нове вікно. Перевірте налаштування блокування спливаючих вікон.");
+                return;
+            }
+
+            
+         
+            newWindow.onload = function() {
+                let table = newWindow.document.getElementById("tab1");
+                try {
+                    for (let angle = start; angle <= end; angle += step) {
+                        let row = table.insertRow();
+                        let rad = (angle * Math.PI) / 180;
+                        let value;
+                        if (func === "sin") value = Math.sin(rad);
+                        else if (func === "cos") value = Math.cos(rad);
+                        else value = Math.tan(rad);
+
+                        let cell1 = row.insertCell(0);
+                        let cell2 = row.insertCell(1);
+                        let cell3 = row.insertCell(2);
+
+                        cell1.innerHTML = angle.toFixed(2);
+                        cell2.innerHTML = rad.toFixed(4);
+                        cell3.innerHTML = isFinite(value) ? value.toFixed(4) : "∞";
+                    }
+                } catch (e) {
+                    newWindow.alert("Помилка при генерації таблиці: " + e.message);
+                }
+            };
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>Введення даних</h2>
+        <form name="trigForm" onsubmit="return validateForm()">
+            <label>Початковий кут (градуси):</label>
+            <input type="text" name="start" onchange="isNumb(this)" required><br>
+            <label>Кінцевий кут (градуси):</label>
+            <input type="text" name="end" onchange="isNumb(this)" required><br>
+            <label>Крок (градуси):</label>
+            <input type="text" name="step" onchange="isNumb(this)" required><br>
+            <label>Функція:</label>
+            <select name="func">
+                <option value="sin">sin</option>
+                <option value="cos">cos</option>
+                <option value="tg">tg</option>
+            </select><br>
+            <button type="submit">Обчислити</button>
+        </form>
+    </div>
+</body>
+</html>
